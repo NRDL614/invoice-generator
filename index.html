@@ -153,7 +153,7 @@
 
         .service-row {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 60px;
+            grid-template-columns: 2fr 1fr 1fr 1fr 60px;
             gap: 15px;
             margin-bottom: 15px;
             align-items: center;
@@ -474,8 +474,9 @@ Indonesia</textarea>
                 <div id="servicesContainer">
                     <div class="service-row">
                         <input type="text" placeholder="Service description" value="Ads Managing Services" class="service-desc">
-                        <input type="text" placeholder="Quantity" value="11.09" class="service-qty">
-                        <input type="number" placeholder="Amount" value="1663500" class="service-amount" step="0.01" onchange="updateTotal()">
+                        <input type="number" placeholder="Hours" value="11.09" class="service-hours" step="0.01" onchange="calculateServiceTotal(this)">
+                        <input type="number" placeholder="Rate/Hour" value="150000" class="service-rate" step="0.01" onchange="calculateServiceTotal(this)">
+                        <input type="number" placeholder="Total" value="1663500" class="service-amount" step="0.01" readonly style="background-color: #f8f9fa;">
                         <button class="btn btn-danger" onclick="removeService(this)">×</button>
                     </div>
                 </div>
@@ -510,6 +511,15 @@ Indonesia</textarea>
             }).format(num);
         }
 
+        function calculateServiceTotal(input) {
+            const row = input.closest('.service-row');
+            const hours = parseFloat(row.querySelector('.service-hours').value) || 0;
+            const rate = parseFloat(row.querySelector('.service-rate').value) || 0;
+            const total = hours * rate;
+            row.querySelector('.service-amount').value = total.toFixed(2);
+            updateTotal();
+        }
+
         function updateTotal() {
             let total = 0;
             document.querySelectorAll('.service-amount').forEach(input => {
@@ -525,8 +535,9 @@ Indonesia</textarea>
             newRow.className = 'service-row';
             newRow.innerHTML = `
                 <input type="text" placeholder="Service description" class="service-desc">
-                <input type="text" placeholder="Quantity" class="service-qty">
-                <input type="number" placeholder="Amount" class="service-amount" step="0.01" onchange="updateTotal()">
+                <input type="number" placeholder="Hours" class="service-hours" step="0.01" onchange="calculateServiceTotal(this)">
+                <input type="number" placeholder="Rate/Hour" class="service-rate" step="0.01" onchange="calculateServiceTotal(this)">
+                <input type="number" placeholder="Total" class="service-amount" step="0.01" readonly style="background-color: #f8f9fa;">
                 <button class="btn btn-danger" onclick="removeService(this)">×</button>
             `;
             container.appendChild(newRow);
@@ -560,10 +571,11 @@ Indonesia</textarea>
             const services = [];
             document.querySelectorAll('.service-row').forEach(row => {
                 const desc = row.querySelector('.service-desc').value;
-                const qty = row.querySelector('.service-qty').value;
+                const hours = row.querySelector('.service-hours').value;
+                const rate = row.querySelector('.service-rate').value;
                 const amount = row.querySelector('.service-amount').value;
-                if (desc || qty || amount) {
-                    services.push({ desc, qty, amount });
+                if (desc || hours || rate || amount) {
+                    services.push({ desc, hours, rate, amount });
                 }
             });
 
@@ -572,7 +584,8 @@ Indonesia</textarea>
             const servicesHTML = services.map(service => `
                 <tr>
                     <td>${service.desc}</td>
-                    <td>${service.qty}</td>
+                    <td>${service.hours} hrs</td>
+                    <td>${formatNumber(parseFloat(service.rate) || 0)}/hr</td>
                     <td class="amount-col">${formatNumber(parseFloat(service.amount) || 0)}</td>
                 </tr>
             `).join('');
@@ -618,7 +631,8 @@ ${data.providerAddress}
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Quantity</th>
+                            <th>Hours</th>
+                            <th>Rate</th>
                             <th>Amount</th>
                         </tr>
                     </thead>
