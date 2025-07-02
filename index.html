@@ -729,6 +729,13 @@ ${data.providerAddress}
             color: #2c3e50;
             white-space: pre-line;
         }
+        @media print {
+            .parties-container {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 60px !important;
+            }
+        }
         .payment-section {
             background-color: #f8f9fa;
             padding: 25px;
