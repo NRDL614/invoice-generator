@@ -114,6 +114,11 @@ select.fi{cursor:pointer}
 .imp-defrate label{font-size:12px;font-weight:500;color:var(--g500);white-space:nowrap}
 .btn-plain{background:#fff;color:var(--g700);border:1px solid var(--g200)}
 .btn-plain:hover{background:var(--g50)}
+.trk-note{color:var(--g500);font-size:12px;line-height:1.5;margin-bottom:12px}
+.trk-field{margin-bottom:10px}
+.trk-msg{font-size:12px;margin-top:8px;min-height:16px}
+.trk-toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;z-index:300;display:none;max-width:90vw}
+.trk-toast.err{background:#b91c1c}
 .svc-sechead-btn{background:none;border:none;cursor:pointer;font-size:11px;font-family:var(--font);padding:0 0 8px 10px;font-weight:500;color:var(--accent)}
 .svc-sechead-btn:hover{color:#1740a0}
 .hint{font-size:11px;color:var(--g400);padding:0 16px;margin:-2px 0 10px;line-height:1.5}
@@ -192,6 +197,13 @@ select.fi{cursor:pointer}
     <button class="btn btn-ghost btn-sm" onclick="window.print()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Print
+    </button>
+    <button class="btn btn-ghost btn-sm" onclick="openTracker()" title="Tracker settings" aria-label="Tracker settings">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+    <button class="btn btn-ghost btn-sm" id="trkBtn" onclick="logToTracker()" title="Save this invoice to your private tracker sheet">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+      Log to Tracker
     </button>
     <button class="btn btn-primary btn-sm" onclick="downloadHTML()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -461,6 +473,23 @@ select.fi{cursor:pointer}
 </div>
 
 <!-- TOGGL IMPORT MODAL -->
+<div class="modal-back no-print" id="trkModal" onclick="if(event.target===this)closeTracker()">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Tracker settings" style="max-width:460px">
+    <div class="modal-head"><span>Tracker settings</span><button class="modal-x" onclick="closeTracker()" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="trk-note">Paste the web app URL and secret key from your Invoice Tracker Apps Script. They are saved only in this browser, never in the page code.</div>
+      <div class="trk-field"><label class="fl" for="trkUrl">Web app URL</label><input class="fi" id="trkUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" spellcheck="false"></div>
+      <div class="trk-field"><label class="fl" for="trkKey">Secret key</label><input class="fi" id="trkKey" type="password" placeholder="From showKey() in Apps Script" autocomplete="off" spellcheck="false"></div>
+      <div class="trk-msg" id="trkMsg"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-plain btn-sm" onclick="clearTracker()">Remove from this browser</button>
+      <button class="btn btn-primary btn-sm" onclick="saveTracker()">Save</button>
+    </div>
+  </div>
+</div>
+<div class="trk-toast no-print" id="trkToast" role="status"></div>
+
 <div class="modal-back no-print" id="impModal" onclick="if(event.target===this)closeImport()">
   <div class="modal" role="dialog" aria-modal="true" aria-label="Import from Toggl PDF">
     <div class="modal-head"><span>Import from Toggl PDF</span><button class="modal-x" onclick="closeImport()" aria-label="Close">×</button></div>
@@ -476,6 +505,7 @@ const CLIENT_KEY='inv_client';
 const LAST_NUM_KEY='inv_lastnum';
 const RATE_KEY='inv_rate_default';
 const PROJ_RATE_KEY='inv_rate_projects';
+const TRACKER_KEY='inv_tracker';
 
 // ===== UTILS =====
 function todayISO(){return new Date().toISOString().split('T')[0]}
@@ -644,6 +674,16 @@ function calcRowDirect(item){
 }
 function getSubtotal(){
   let t=0;document.querySelectorAll('.svc-a').forEach(i=>t+=parseFloat(i.value)||0);return t;
+}
+
+function getTotals(){
+  const sub=getSubtotal();
+  const ttype=val('taxType'),tval=parseFloat(val('taxValue'))||0;
+  const dtype=val('discountType'),dval=parseFloat(val('discountValue'))||0;
+  let tax=0,disc=0;
+  if(ttype==='pct')tax=sub*tval/100;else if(ttype==='flat')tax=tval;
+  if(dtype==='pct')disc=sub*dval/100;else if(dtype==='flat')disc=dval;
+  return {sub,tax,disc,grand:sub+tax-disc,ttype,tval,dtype,dval};
 }
 
 // ===== TOGGL PDF PARSER =====
@@ -885,13 +925,7 @@ function updatePreview(){
   });
 
   // Totals
-  const sub=getSubtotal();
-  const ttype=val('taxType'),tval=parseFloat(val('taxValue'))||0;
-  const dtype=val('discountType'),dval=parseFloat(val('discountValue'))||0;
-  let tax=0,disc=0;
-  if(ttype==='pct')tax=sub*tval/100;else if(ttype==='flat')tax=tval;
-  if(dtype==='pct')disc=sub*dval/100;else if(dtype==='flat')disc=dval;
-  const grand=sub+tax-disc;
+  const {sub,tax,disc,grand,ttype,tval,dtype,dval}=getTotals();
 
   let th=`<div class="tot-row"><span>Subtotal</span><span>${fmtIDR(sub)}</span></div>`;
   if(ttype!=='none'&&tval>0)th+=`<div class="tot-row"><span>Tax ${ttype==='pct'?'('+tval+'%)':''}</span><span>+ ${fmtIDR(tax)}</span></div>`;
@@ -964,6 +998,58 @@ ${styles}
   const a=document.createElement('a');
   a.href=url;a.download='invoice-'+id.replace(/\//g,'-')+'.html';
   a.click();URL.revokeObjectURL(url);
+}
+
+// ===== TRACKER (private Google Sheet via your Apps Script) =====
+// Sends only: invoice no, dates, client name, line items, total.
+// Never sends your address, phone, email or bank details.
+function getTracker(){try{return JSON.parse(localStorage.getItem(TRACKER_KEY))||null}catch(e){return null}}
+function openTracker(){
+  const t=getTracker()||{};
+  document.getElementById('trkUrl').value=t.url||'';
+  document.getElementById('trkKey').value=t.key||'';
+  document.getElementById('trkMsg').textContent='';
+  document.getElementById('trkModal').style.display='flex';
+}
+function closeTracker(){document.getElementById('trkModal').style.display='none'}
+function saveTracker(){
+  const url=document.getElementById('trkUrl').value.trim(),key=document.getElementById('trkKey').value.trim();
+  const msg=document.getElementById('trkMsg');
+  if(!/^https:\/\/script\.google\.com\/(a\/macros\/[^\/]+|macros)\/s\/[\w-]+\/exec$/.test(url)){msg.style.color='#b91c1c';msg.textContent='The URL should look like https://script.google.com/macros/s/…/exec';return}
+  if(key.length<16){msg.style.color='#b91c1c';msg.textContent='The key looks too short.';return}
+  try{localStorage.setItem(TRACKER_KEY,JSON.stringify({url,key}))}catch(e){msg.style.color='#b91c1c';msg.textContent='This browser blocked saving.';return}
+  closeTracker();toast('Tracker settings saved in this browser');
+}
+function clearTracker(){
+  try{localStorage.removeItem(TRACKER_KEY)}catch(e){}
+  document.getElementById('trkUrl').value='';document.getElementById('trkKey').value='';
+  closeTracker();toast('Tracker settings removed from this browser');
+}
+let _toastT=null;
+function toast(t,err){
+  const el=document.getElementById('trkToast');el.textContent=t;el.className='trk-toast no-print'+(err?' err':'');
+  el.style.display='block';clearTimeout(_toastT);_toastT=setTimeout(()=>el.style.display='none',err?6000:3500);
+}
+async function logToTracker(){
+  const t=getTracker();
+  if(!t||!t.url||!t.key){openTracker();return}
+  const items=[...document.querySelectorAll('.svc-item')].map(it=>({
+    description:it.querySelector('.svc-desc').value.trim(),
+    hours:parseFloat(it.querySelector('.svc-h').value)||0,
+    rate:parseFloat(it.querySelector('.svc-r').value)||0,
+    amount:parseFloat(it.querySelector('.svc-a').value)||0
+  })).filter(i=>i.description||i.amount);
+  const invoice={invoiceNo:val('invoiceId').trim(),invoiceDate:val('invoiceDate'),dueDate:val('dueDate'),
+    client:val('clientName').trim(),total:Math.round(getTotals().grand*100)/100,items};
+  if(!invoice.invoiceNo||!invoice.invoiceDate||!(invoice.total>0)){toast('Add an invoice number, date and at least one amount first',true);return}
+  const btn=document.getElementById('trkBtn');btn.disabled=true;
+  try{
+    const r=await fetch(t.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key:t.key,invoice}),redirect:'follow'});
+    const res=await r.json();
+    if(res.ok){saveInvNum(invoice.invoiceNo);toast((res.action==='updated'?'Updated ':'Logged ')+invoice.invoiceNo+' in your tracker')}
+    else toast(res.error==='unauthorized'?'Tracker rejected the key. Check Tracker settings.':'Tracker error: '+res.error,true);
+  }catch(e){toast('Could not reach the tracker. Check the URL and your connection.',true)}
+  finally{btn.disabled=false}
 }
 
 // ===== INIT =====
